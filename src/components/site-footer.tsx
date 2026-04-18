@@ -1,13 +1,16 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-white/8 bg-black/35">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-10 md:flex-row md:items-end md:justify-between md:px-10">
         <div>
-          <p className="font-display text-5xl uppercase tracking-[0.08em] text-[var(--paper)]">
-            Moviejet
-          </p>
+          <BrandMark
+            showWordmark
+            imageClassName="h-14 w-auto"
+            wordmarkClassName="font-display text-5xl uppercase tracking-[0.08em] text-[var(--paper)]"
+          />
           <p className="mt-3 max-w-md text-sm leading-7 text-[var(--muted)]">
             Entertainment coverage, trailer culture, and campaign-ready editorial built for a
             brand that already lives on social.

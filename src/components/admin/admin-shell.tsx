@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandMark } from "@/components/brand-mark";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -11,8 +12,12 @@ export function AdminShell({ children, email }: AdminShellProps) {
     <div className="min-h-screen bg-[var(--ink)] text-[var(--paper)]">
       <div className="mx-auto grid min-h-screen max-w-7xl gap-10 px-6 py-8 lg:grid-cols-[16rem_1fr] lg:px-10">
         <aside className="rounded-[2rem] border border-white/10 bg-[var(--panel)] p-6 lg:sticky lg:top-8 lg:h-fit">
-          <Link href="/" className="font-display text-5xl uppercase tracking-[0.08em] text-white">
-            Moviejet
+          <Link href="/" aria-label="Moviejet home">
+            <BrandMark
+              showWordmark
+              imageClassName="h-14 w-auto"
+              wordmarkClassName="font-display text-5xl uppercase tracking-[0.08em] text-white"
+            />
           </Link>
           <p className="mt-3 text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
             Editorial backend

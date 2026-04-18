@@ -2,6 +2,20 @@
 
 Moviejet is a Next.js editorial entertainment site with a lightweight backend for publishing stories, spotlighting featured posts, and handing day-to-day content updates to a non-technical editor.
 
+## Screenshots
+
+### Homepage
+
+![Moviejet homepage](docs/screenshots/homepage.png)
+
+### Story archive
+
+![Moviejet story archive](docs/screenshots/archive.png)
+
+### Admin dashboard
+
+![Moviejet admin dashboard](docs/screenshots/admin.png)
+
 ## Stack
 
 - Next.js App Router
