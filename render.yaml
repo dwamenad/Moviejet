@@ -1,0 +1,29 @@
+previews:
+  generation: off
+
+services:
+  - type: web
+    name: moviejet
+    runtime: docker
+    plan: starter
+    region: ohio
+    branch: master
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /app/data
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+    disk:
+      name: moviejet-data
+      mountPath: /app/data
+      sizeGB: 1

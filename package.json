@@ -2,12 +2,16 @@
   "name": "moviejet",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "content:seed": "tsx scripts/seed-content.ts"
+    "content:seed": "tsx scripts/seed-content.ts",
+    "password:hash": "tsx scripts/hash-password.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

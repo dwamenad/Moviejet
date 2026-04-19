@@ -1,5 +1,5 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { slugify } from "@/lib/utils";
 
 export type Post = {
@@ -33,7 +33,19 @@ export type PostInput = {
   published: boolean;
 };
 
-const dataFile = join(process.cwd(), "data", "posts.json");
+const dataDirectory = (() => {
+  const configuredPath = process.env.DATA_DIR?.trim();
+
+  if (!configuredPath) {
+    return join(/* turbopackIgnore: true */ process.cwd(), "data");
+  }
+
+  return isAbsolute(configuredPath)
+    ? configuredPath
+    : join(/* turbopackIgnore: true */ process.cwd(), configuredPath);
+})();
+
+const dataFile = join(dataDirectory, "posts.json");
 
 const seedStories = [
   {
@@ -261,4 +273,8 @@ export async function deleteStory(id: string) {
 
 export async function resetSeedContent() {
   await writePosts(buildSeedPosts());
+}
+
+export function getDataFilePath() {
+  return dataFile;
 }
