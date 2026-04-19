@@ -87,6 +87,7 @@ const createPostsIndexSql = `
   CREATE INDEX IF NOT EXISTS posts_publish_order_idx
   ON posts (published, published_at DESC, updated_at DESC);
 `;
+const databaseInitLockKey: [number, number] = [4217, 20260419];
 
 const seedStories = [
   {
@@ -317,6 +318,7 @@ async function initialiseDatabase() {
     await client.query("BEGIN");
 
     try {
+      await client.query("SELECT pg_advisory_xact_lock($1, $2)", databaseInitLockKey);
       await client.query(createPostsTableSql);
       await client.query(createPostsIndexSql);
 
@@ -343,7 +345,10 @@ async function ensureDatabaseReady() {
     return;
   }
 
-  databaseInitPromise ??= initialiseDatabase();
+  databaseInitPromise ??= initialiseDatabase().catch((error) => {
+    databaseInitPromise = null;
+    throw error;
+  });
   await databaseInitPromise;
 }
 
