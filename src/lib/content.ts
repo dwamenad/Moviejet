@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
+import { Pool, type PoolClient } from "pg";
 import { slugify } from "@/lib/utils";
 
 export type Post = {
@@ -33,6 +34,23 @@ export type PostInput = {
   published: boolean;
 };
 
+type PostRow = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  category: string;
+  cover_image: string;
+  trailer_url: string | null;
+  spotlight: boolean;
+  featured: boolean;
+  published: boolean;
+  published_at: Date | string | null;
+  created_at: Date | string;
+  updated_at: Date | string;
+};
+
 const dataDirectory = (() => {
   const configuredPath = process.env.DATA_DIR?.trim();
 
@@ -46,6 +64,29 @@ const dataDirectory = (() => {
 })();
 
 const dataFile = join(dataDirectory, "posts.json");
+const databaseUrl = process.env.DATABASE_URL?.trim() || null;
+const createPostsTableSql = `
+  CREATE TABLE IF NOT EXISTS posts (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    excerpt TEXT NOT NULL,
+    body TEXT NOT NULL,
+    category TEXT NOT NULL,
+    cover_image TEXT NOT NULL,
+    trailer_url TEXT,
+    spotlight BOOLEAN NOT NULL DEFAULT FALSE,
+    featured BOOLEAN NOT NULL DEFAULT FALSE,
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    published_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+  );
+`;
+const createPostsIndexSql = `
+  CREATE INDEX IF NOT EXISTS posts_publish_order_idx
+  ON posts (published, published_at DESC, updated_at DESC);
+`;
 
 const seedStories = [
   {
@@ -106,6 +147,9 @@ const seedStories = [
   },
 ];
 
+let pool: Pool | null = null;
+let databaseInitPromise: Promise<void> | null = null;
+
 function buildSeedPosts(): Post[] {
   return seedStories.map((story, index) => {
     const timestamp = new Date(Date.now() - index * 86_400_000).toISOString();
@@ -121,15 +165,69 @@ function buildSeedPosts(): Post[] {
   });
 }
 
-async function writePosts(posts: Post[]) {
-  await mkdir(dirname(dataFile), { recursive: true });
-
-  const tempFile = `${dataFile}.tmp`;
-  await writeFile(tempFile, JSON.stringify(posts, null, 2));
-  await rename(tempFile, dataFile);
+function isDatabaseEnabled() {
+  return Boolean(databaseUrl);
 }
 
-async function ensurePostsFile() {
+function getPool() {
+  if (!databaseUrl) {
+    throw new Error("DATABASE_NOT_CONFIGURED");
+  }
+
+  if (!pool) {
+    pool = new Pool({
+      connectionString: databaseUrl,
+      max: 5,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 5_000,
+    });
+
+    pool.on("error", (error) => {
+      console.error("Unexpected Postgres pool error", error);
+    });
+  }
+
+  return pool;
+}
+
+async function withDatabaseClient<T>(callback: (client: PoolClient) => Promise<T>) {
+  const client = await getPool().connect();
+
+  try {
+    return await callback(client);
+  } finally {
+    client.release();
+  }
+}
+
+function normaliseTimestamp(value: Date | string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
+function mapRowToPost(row: PostRow): Post {
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    excerpt: row.excerpt,
+    body: row.body,
+    category: row.category,
+    coverImage: row.cover_image,
+    trailerUrl: row.trailer_url,
+    spotlight: row.spotlight,
+    featured: row.featured,
+    published: row.published,
+    publishedAt: normaliseTimestamp(row.published_at),
+    createdAt: normaliseTimestamp(row.created_at) ?? new Date().toISOString(),
+    updatedAt: normaliseTimestamp(row.updated_at) ?? new Date().toISOString(),
+  };
+}
+
+async function readPostsFileIfPresent() {
   try {
     const raw = await readFile(dataFile, "utf8");
     return JSON.parse(raw) as Post[];
@@ -140,13 +238,131 @@ async function ensurePostsFile() {
       "code" in error &&
       error.code === "ENOENT"
     ) {
-      const posts = buildSeedPosts();
-      await writePosts(posts);
-      return posts;
+      return null;
     }
 
     throw error;
   }
+}
+
+async function writePosts(posts: Post[]) {
+  await mkdir(dirname(dataFile), { recursive: true });
+
+  const tempFile = `${dataFile}.tmp`;
+  await writeFile(tempFile, JSON.stringify(posts, null, 2));
+  await rename(tempFile, dataFile);
+}
+
+async function ensurePostsFile() {
+  const posts = await readPostsFileIfPresent();
+
+  if (posts) {
+    return posts;
+  }
+
+  const seedPosts = buildSeedPosts();
+  await writePosts(seedPosts);
+  return seedPosts;
+}
+
+async function loadBootstrapPosts() {
+  const filePosts = await readPostsFileIfPresent();
+  return filePosts && filePosts.length > 0 ? filePosts : buildSeedPosts();
+}
+
+async function insertPosts(client: PoolClient, posts: Post[]) {
+  for (const post of posts) {
+    await client.query(
+      `
+        INSERT INTO posts (
+          id,
+          title,
+          slug,
+          excerpt,
+          body,
+          category,
+          cover_image,
+          trailer_url,
+          spotlight,
+          featured,
+          published,
+          published_at,
+          created_at,
+          updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      `,
+      [
+        post.id,
+        post.title,
+        post.slug,
+        post.excerpt,
+        post.body,
+        post.category,
+        post.coverImage,
+        post.trailerUrl,
+        post.spotlight,
+        post.featured,
+        post.published,
+        post.publishedAt,
+        post.createdAt,
+        post.updatedAt,
+      ],
+    );
+  }
+}
+
+async function initialiseDatabase() {
+  await withDatabaseClient(async (client) => {
+    await client.query("BEGIN");
+
+    try {
+      await client.query(createPostsTableSql);
+      await client.query(createPostsIndexSql);
+
+      const countResult = await client.query<{ count: string | number }>(
+        "SELECT COUNT(*)::int AS count FROM posts",
+      );
+      const count = Number(countResult.rows[0]?.count ?? 0);
+
+      if (count === 0) {
+        const bootstrapPosts = await loadBootstrapPosts();
+        await insertPosts(client, bootstrapPosts);
+      }
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+  });
+}
+
+async function ensureDatabaseReady() {
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+
+  databaseInitPromise ??= initialiseDatabase();
+  await databaseInitPromise;
+}
+
+async function getAllPosts() {
+  if (!isDatabaseEnabled()) {
+    return ensurePostsFile();
+  }
+
+  await ensureDatabaseReady();
+
+  const result = await getPool().query<PostRow>(
+    `
+      SELECT *
+      FROM posts
+      ORDER BY COALESCE(published_at, updated_at) DESC
+    `,
+  );
+
+  return result.rows.map(mapRowToPost);
 }
 
 function sortPosts(posts: Post[]) {
@@ -158,8 +374,17 @@ function sortPosts(posts: Post[]) {
   });
 }
 
+function isUniqueViolation(error: unknown) {
+  return (
+    error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "23505"
+  );
+}
+
 export async function getHomepageContent() {
-  const posts = sortPosts((await ensurePostsFile()).filter((post) => post.published));
+  const posts = sortPosts((await getAllPosts()).filter((post) => post.published));
 
   const spotlightStory = posts.find((post) => post.spotlight) ?? posts[0] ?? null;
   const featuredStories = posts
@@ -180,101 +405,260 @@ export async function getHomepageContent() {
 }
 
 export async function getPublishedStories() {
-  return sortPosts((await ensurePostsFile()).filter((post) => post.published));
+  return sortPosts((await getAllPosts()).filter((post) => post.published));
 }
 
 export async function getStoryBySlug(slug: string) {
-  return (await ensurePostsFile()).find((post) => post.slug === slug) ?? null;
+  return (await getAllPosts()).find((post) => post.slug === slug) ?? null;
 }
 
 export async function getRelatedStories(category: string, excludeId: string) {
   return sortPosts(
-    (await ensurePostsFile()).filter(
+    (await getAllPosts()).filter(
       (post) => post.published && post.category === category && post.id !== excludeId,
     ),
   ).slice(0, 3);
 }
 
 export async function getAdminStories() {
-  return sortPosts(await ensurePostsFile());
+  return sortPosts(await getAllPosts());
 }
 
 export async function getAdminStoryById(id: string) {
-  return (await ensurePostsFile()).find((post) => post.id === id) ?? null;
+  return (await getAllPosts()).find((post) => post.id === id) ?? null;
 }
 
 export async function saveStory(input: PostInput) {
-  const posts = await ensurePostsFile();
+  if (!isDatabaseEnabled()) {
+    const posts = await ensurePostsFile();
+    const now = new Date().toISOString();
+    const slug = slugify(input.slug || input.title);
+    const duplicate = posts.find((post) => post.slug === slug && post.id !== input.id);
+
+    if (duplicate) {
+      throw new Error("DUPLICATE_SLUG");
+    }
+
+    if (input.id) {
+      const index = posts.findIndex((post) => post.id === input.id);
+
+      if (index === -1) {
+        throw new Error("NOT_FOUND");
+      }
+
+      const existing = posts[index];
+      const publishedAt =
+        input.published && !existing.publishedAt ? now : input.published ? existing.publishedAt : null;
+
+      const updated: Post = {
+        ...existing,
+        ...input,
+        slug,
+        trailerUrl: input.trailerUrl || null,
+        updatedAt: now,
+        publishedAt,
+      };
+
+      posts[index] = updated;
+      await writePosts(posts);
+      return updated;
+    }
+
+    const created: Post = {
+      id: crypto.randomUUID(),
+      title: input.title,
+      slug,
+      excerpt: input.excerpt,
+      body: input.body,
+      category: input.category,
+      coverImage: input.coverImage,
+      trailerUrl: input.trailerUrl || null,
+      spotlight: input.spotlight,
+      featured: input.featured,
+      published: input.published,
+      createdAt: now,
+      updatedAt: now,
+      publishedAt: input.published ? now : null,
+    };
+
+    await writePosts([created, ...posts]);
+    return created;
+  }
+
+  await ensureDatabaseReady();
+
   const now = new Date().toISOString();
   const slug = slugify(input.slug || input.title);
 
-  const duplicate = posts.find((post) => post.slug === slug && post.id !== input.id);
+  return withDatabaseClient(async (client) => {
+    await client.query("BEGIN");
 
-  if (duplicate) {
-    throw new Error("DUPLICATE_SLUG");
-  }
+    try {
+      if (input.id) {
+        const existingResult = await client.query<PostRow>(
+          `
+            SELECT *
+            FROM posts
+            WHERE id = $1
+            LIMIT 1
+          `,
+          [input.id],
+        );
 
-  if (input.id) {
-    const index = posts.findIndex((post) => post.id === input.id);
+        if (existingResult.rowCount === 0) {
+          throw new Error("NOT_FOUND");
+        }
 
-    if (index === -1) {
-      throw new Error("NOT_FOUND");
+        const existing = mapRowToPost(existingResult.rows[0]);
+        const publishedAt =
+          input.published && !existing.publishedAt ? now : input.published ? existing.publishedAt : null;
+        const updatedResult = await client.query<PostRow>(
+          `
+            UPDATE posts
+            SET
+              title = $2,
+              slug = $3,
+              excerpt = $4,
+              body = $5,
+              category = $6,
+              cover_image = $7,
+              trailer_url = $8,
+              spotlight = $9,
+              featured = $10,
+              published = $11,
+              published_at = $12,
+              updated_at = $13
+            WHERE id = $1
+            RETURNING *
+          `,
+          [
+            input.id,
+            input.title,
+            slug,
+            input.excerpt,
+            input.body,
+            input.category,
+            input.coverImage,
+            input.trailerUrl || null,
+            input.spotlight,
+            input.featured,
+            input.published,
+            publishedAt,
+            now,
+          ],
+        );
+
+        await client.query("COMMIT");
+        return mapRowToPost(updatedResult.rows[0]);
+      }
+
+      const createdResult = await client.query<PostRow>(
+        `
+          INSERT INTO posts (
+            id,
+            title,
+            slug,
+            excerpt,
+            body,
+            category,
+            cover_image,
+            trailer_url,
+            spotlight,
+            featured,
+            published,
+            published_at,
+            created_at,
+            updated_at
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          RETURNING *
+        `,
+        [
+          crypto.randomUUID(),
+          input.title,
+          slug,
+          input.excerpt,
+          input.body,
+          input.category,
+          input.coverImage,
+          input.trailerUrl || null,
+          input.spotlight,
+          input.featured,
+          input.published,
+          input.published ? now : null,
+          now,
+          now,
+        ],
+      );
+
+      await client.query("COMMIT");
+      return mapRowToPost(createdResult.rows[0]);
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      if (isUniqueViolation(error)) {
+        throw new Error("DUPLICATE_SLUG");
+      }
+
+      throw error;
     }
-
-    const existing = posts[index];
-    const publishedAt =
-      input.published && !existing.publishedAt ? now : input.published ? existing.publishedAt : null;
-
-    const updated: Post = {
-      ...existing,
-      ...input,
-      slug,
-      trailerUrl: input.trailerUrl || null,
-      updatedAt: now,
-      publishedAt,
-    };
-
-    posts[index] = updated;
-    await writePosts(posts);
-    return updated;
-  }
-
-  const created: Post = {
-    id: crypto.randomUUID(),
-    title: input.title,
-    slug,
-    excerpt: input.excerpt,
-    body: input.body,
-    category: input.category,
-    coverImage: input.coverImage,
-    trailerUrl: input.trailerUrl || null,
-    spotlight: input.spotlight,
-    featured: input.featured,
-    published: input.published,
-    createdAt: now,
-    updatedAt: now,
-    publishedAt: input.published ? now : null,
-  };
-
-  await writePosts([created, ...posts]);
-  return created;
+  });
 }
 
 export async function deleteStory(id: string) {
-  const posts = await ensurePostsFile();
-  const nextPosts = posts.filter((post) => post.id !== id);
+  if (!isDatabaseEnabled()) {
+    const posts = await ensurePostsFile();
+    const nextPosts = posts.filter((post) => post.id !== id);
 
-  if (nextPosts.length === posts.length) {
-    throw new Error("NOT_FOUND");
+    if (nextPosts.length === posts.length) {
+      throw new Error("NOT_FOUND");
+    }
+
+    await writePosts(nextPosts);
+    return;
   }
 
-  await writePosts(nextPosts);
+  await ensureDatabaseReady();
+
+  const result = await getPool().query(
+    `
+      DELETE FROM posts
+      WHERE id = $1
+    `,
+    [id],
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("NOT_FOUND");
+  }
 }
 
 export async function resetSeedContent() {
-  await writePosts(buildSeedPosts());
+  if (!isDatabaseEnabled()) {
+    await writePosts(buildSeedPosts());
+    return;
+  }
+
+  await ensureDatabaseReady();
+
+  await withDatabaseClient(async (client) => {
+    await client.query("BEGIN");
+
+    try {
+      await client.query("TRUNCATE TABLE posts");
+      await insertPosts(client, buildSeedPosts());
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+  });
 }
 
 export function getDataFilePath() {
-  return dataFile;
+  return isDatabaseEnabled() ? null : dataFile;
+}
+
+export function getStorageMode() {
+  return isDatabaseEnabled() ? "database" : "file";
 }

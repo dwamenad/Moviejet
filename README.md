@@ -20,7 +20,7 @@ Moviejet is a Next.js editorial entertainment site with a lightweight backend fo
 
 - Next.js App Router
 - Tailwind CSS v4
-- File-backed JSON content store for local editing
+- Postgres storage with a file-backed JSON fallback for local editing
 - Cookie-based admin login for content management
 - Standalone Next.js output for Node/VPS deployment
 
@@ -28,19 +28,20 @@ Moviejet is a Next.js editorial entertainment site with a lightweight backend fo
 
 1. Copy `.env.example` to `.env`.
 2. Set `ADMIN_EMAIL`, `ADMIN_PASSWORD` (or `ADMIN_PASSWORD_HASH`), and `SESSION_SECRET`.
-3. Install dependencies:
+3. Optional: set `DATABASE_URL` if you want local Postgres instead of the default file store.
+4. Install dependencies:
 
 ```bash
 npm install
 ```
 
-4. Seed starter content:
+5. Seed starter content:
 
 ```bash
 npm run content:seed
 ```
 
-5. Start the dev server:
+6. Start the dev server:
 
 ```bash
 npm run dev
@@ -53,7 +54,7 @@ This app is now prepared for a standard Node.js or container deployment.
 Important:
 
 - It needs a host that can run a Node.js process.
-- It needs a writable persistent filesystem for `data/posts.json`.
+- For production, it should use `DATABASE_URL` and a managed Postgres database.
 - Shared WordPress-only hosting is not enough for this build.
 
 ### Required environment variables
@@ -61,7 +62,8 @@ Important:
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`
 - `SESSION_SECRET`
-- `DATA_DIR` optional, defaults to `./data`
+- `DATABASE_URL` recommended for production
+- `DATA_DIR` optional and only used when `DATABASE_URL` is not set
 
 ### Build and run directly
 
@@ -77,16 +79,18 @@ npm run start
 docker build -t moviejet .
 docker run \
   -p 3000:3000 \
+  -e DATABASE_URL="postgresql://user:password@host:5432/moviejet" \
   -e ADMIN_EMAIL="admin@moviejet.org" \
   -e ADMIN_PASSWORD_HASH="replace-me" \
   -e SESSION_SECRET="replace-me" \
-  -v moviejet_data:/app/data \
   moviejet
 ```
 
+If you omit `DATABASE_URL`, mount a writable volume and keep using the local JSON store instead.
+
 ### Render deploy
 
-This repo now includes a Render Blueprint in `render.yaml` for a Docker-based web service with a persistent disk.
+This repo now includes a Render Blueprint in `render.yaml` for a Docker-based web service plus a managed Postgres database.
 
 1. Push the latest repo contents to GitHub.
 2. In Render, create a new Blueprint and select this repository.
@@ -95,7 +99,7 @@ This repo now includes a Render Blueprint in `render.yaml` for a Docker-based we
    - runtime: Docker
    - branch: `master`
    - health check: `/api/health`
-   - persistent disk mount: `/app/data`
+   - managed Postgres database: `moviejet-db`
 4. When Render prompts for environment variables, provide:
    - `ADMIN_EMAIL`
    - `ADMIN_PASSWORD_HASH`
@@ -105,8 +109,8 @@ This repo now includes a Render Blueprint in `render.yaml` for a Docker-based we
 
 Important:
 
-- Render persistent disks require a paid web service plan.
-- This app stores content in `posts.json`, so the persistent disk is required.
+- On first boot with `DATABASE_URL`, the app creates the `posts` table automatically.
+- If the database is empty, the app imports starter content from `data/posts.json`.
 - Do not set `ADMIN_PASSWORD` in production if you already set `ADMIN_PASSWORD_HASH`.
 
 ### Password hashing
