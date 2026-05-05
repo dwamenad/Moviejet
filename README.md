@@ -21,14 +21,15 @@ Moviejet is a Next.js editorial entertainment site with a lightweight backend fo
 - Next.js App Router
 - Tailwind CSS v4
 - Postgres storage with a file-backed JSON fallback for local editing
-- Cookie-based admin login for content management
+- Cookie-based admin login with optional Google OAuth for content management
 - Standalone Next.js output for Node/VPS deployment
 
 ## Local setup
 
 1. Copy `.env.example` to `.env`.
 2. Set `ADMIN_EMAIL`, `ADMIN_PASSWORD` (or `ADMIN_PASSWORD_HASH`), and `SESSION_SECRET`.
-3. Optional: set `DATABASE_URL` if you want local Postgres instead of the default file store.
+3. Optional: set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_ADMIN_EMAILS` if you want Google sign-in for admins.
+4. Optional: set `DATABASE_URL` if you want local Postgres instead of the default file store.
 4. Install dependencies:
 
 ```bash
@@ -60,8 +61,14 @@ Important:
 ### Required environment variables
 
 - `ADMIN_EMAIL`
+- `ADMIN_EMAILS` optional comma-separated password-login aliases
 - `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`
 - `SESSION_SECRET`
+- `GOOGLE_CLIENT_ID` optional
+- `GOOGLE_CLIENT_SECRET` optional
+- `GOOGLE_ADMIN_EMAILS` optional comma-separated Google admin allowlist
+- `GOOGLE_OAUTH_REDIRECT_URI` optional override for the Google callback URL
+- `GOOGLE_WORKSPACE_DOMAIN` optional Workspace domain hint/restriction
 - `DATABASE_URL` recommended for production
 - `DATA_DIR` optional and only used when `DATABASE_URL` is not set
 
@@ -123,6 +130,22 @@ npm run password:hash -- "your-password-here"
 
 Paste the resulting hash into Render as the value for `ADMIN_PASSWORD_HASH`.
 
+### Google OAuth setup
+
+To add Google sign-in for admin users:
+
+1. In Google Cloud Console, create a Web application OAuth client.
+2. Add these authorized redirect URIs:
+   - `http://localhost:3000/auth/google/callback`
+   - `https://moviejet.org/auth/google/callback`
+3. Copy the client ID and client secret into:
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+4. Set `GOOGLE_ADMIN_EMAILS` to the comma-separated Google accounts that should be allowed into `/admin`.
+5. Optional: set `GOOGLE_WORKSPACE_DOMAIN` if you only want to allow users from a specific Google Workspace domain.
+
+The password login can stay enabled as a fallback, or you can rely entirely on Google sign-in.
+
 ### Health check
 
 - Health endpoint: `/api/health`
@@ -154,6 +177,11 @@ The editor can:
 - choose a homepage spotlight story
 - mark stories as featured
 - add a YouTube trailer link for the trailer block
+
+Admin sign-in options:
+
+- password login with `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`
+- Google OAuth with an email allowlist via `GOOGLE_ADMIN_EMAILS`
 
 ## Handoff notes
 

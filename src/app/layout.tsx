@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "Moviejet",
   description:
     "Moviejet is a cinematic entertainment brand covering movie culture, trailers, campaigns, and the releases shaping the timeline.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

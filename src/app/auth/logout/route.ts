@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionCookieName } from "@/lib/auth";
+import {
+  getSessionCookieOptions,
+  googleOauthNonceCookieName,
+  googleOauthStateCookieName,
+  sessionCookieName,
+} from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.redirect(new URL("/login", request.url));
@@ -7,10 +12,21 @@ export async function POST(request: NextRequest) {
   response.cookies.set({
     name: sessionCookieName,
     value: "",
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
+    ...getSessionCookieOptions(),
+    expires: new Date(0),
+  });
+
+  response.cookies.set({
+    name: googleOauthStateCookieName,
+    value: "",
+    ...getSessionCookieOptions(),
+    expires: new Date(0),
+  });
+
+  response.cookies.set({
+    name: googleOauthNonceCookieName,
+    value: "",
+    ...getSessionCookieOptions(),
     expires: new Date(0),
   });
 

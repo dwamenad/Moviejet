@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getAdminIdentity,
+  getPasswordAdminConfig,
+  getSessionCookieOptions,
   issueSessionToken,
   sessionCookieName,
   validateAdminCredentials,
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const admin = getAdminIdentity();
+  const admin = getPasswordAdminConfig();
 
   if (!admin.configured) {
     return NextResponse.redirect(new URL("/login?error=Admin+credentials+are+not+configured", request.url));
@@ -30,10 +31,7 @@ export async function POST(request: NextRequest) {
   response.cookies.set({
     name: sessionCookieName,
     value: token,
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
+    ...getSessionCookieOptions(),
     maxAge: 60 * 60 * 24 * 7,
   });
 
