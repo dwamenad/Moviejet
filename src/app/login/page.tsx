@@ -38,11 +38,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <h1 className="copy-balance mt-4 text-5xl font-semibold tracking-tight text-white md:text-7xl">
             Sign in to publish, feature, and update new stories.
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-[var(--muted)]">
-            This admin is intentionally simple so your friend can manage the site without touching
-            code. Use a password, Google sign-in, or both depending on how you configure the
-            environment.
-          </p>
         </div>
 
         <div className="rounded-[2rem] border border-white/10 bg-[var(--panel)] p-6 md:p-8">
