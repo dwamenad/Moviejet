@@ -4,6 +4,7 @@ import {
   getGoogleAdminConfig,
   getGoogleOauthRedirectUri,
   getGoogleOpenIdConfiguration,
+  getRequestOrigin,
   getSessionCookieOptions,
   googleOauthNonceCookieName,
   googleOauthStateCookieName,
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest) {
   const state = randomBytes(24).toString("base64url");
   const nonce = randomBytes(24).toString("base64url");
   const configuration = await getGoogleOpenIdConfiguration();
-  const redirectUri = getGoogleOauthRedirectUri(request.nextUrl.origin);
+  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
+  const redirectUri = getGoogleOauthRedirectUri(origin);
   const authorizationUrl = new URL(configuration.authorizationEndpoint);
 
   authorizationUrl.search = new URLSearchParams({

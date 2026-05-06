@@ -5,6 +5,7 @@ import {
   getGoogleJwkSet,
   getGoogleOauthRedirectUri,
   getGoogleOpenIdConfiguration,
+  getRequestOrigin,
   getSessionCookieOptions,
   googleOauthNonceCookieName,
   googleOauthStateCookieName,
@@ -63,7 +64,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const configuration = await getGoogleOpenIdConfiguration();
-    const redirectUri = getGoogleOauthRedirectUri(request.nextUrl.origin);
+    const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
+    const redirectUri = getGoogleOauthRedirectUri(origin);
     const tokenResponse = await fetch(configuration.tokenEndpoint, {
       method: "POST",
       headers: {

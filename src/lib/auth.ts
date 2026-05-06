@@ -159,6 +159,17 @@ export function getGoogleOauthRedirectUri(origin: string) {
   return configuredRedirectUri ?? `${origin}/auth/google/callback`;
 }
 
+export function getRequestOrigin(headers: Headers, fallbackOrigin: string) {
+  const forwardedHost = headers.get("x-forwarded-host") ?? headers.get("host");
+  const forwardedProto = headers.get("x-forwarded-proto") ?? "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto.split(",")[0]}://${forwardedHost.split(",")[0]}`;
+  }
+
+  return fallbackOrigin;
+}
+
 export function isAllowedGoogleAdminEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   return getGoogleAdminConfig().allowedEmails.includes(normalizedEmail);
