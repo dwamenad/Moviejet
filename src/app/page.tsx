@@ -279,9 +279,16 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-6 py-20 md:px-10">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] border border-[var(--bronze-soft)] bg-[linear-gradient(135deg,rgba(216,156,77,0.2),rgba(216,156,77,0.04)_28%,rgba(16,12,13,0.95)_58%)] p-8 md:p-12">
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+      <section className="relative isolate overflow-hidden px-6 py-24 md:px-10">
+        <img
+          src={spotlightStory.coverImage}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35"
+        />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(9,6,7,0.96),rgba(9,6,7,0.82)_48%,rgba(9,6,7,0.7)),linear-gradient(180deg,rgba(9,6,7,0.9),rgba(9,6,7,0.72))]" />
+        <div className="mx-auto max-w-7xl border-y border-white/10 py-14">
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[var(--bronze)]">
                 Editorial rhythm
@@ -295,7 +302,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="rounded-[1.8rem] border border-white/10 bg-black/30 p-6">
+            <div className="border-l border-[var(--bronze)]/45 bg-black/35 p-6 backdrop-blur-sm">
               <div className="flex items-center gap-3 text-[var(--bronze)]">
                 <Clapperboard className="h-5 w-5" />
                 <Sparkles className="h-5 w-5" />
@@ -309,7 +316,7 @@ export default async function Home() {
                   href="https://www.instagram.com/moviejet_official/"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--paper)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--ink)] transition hover:bg-white"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--bronze)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--ink)] transition hover:bg-[#f0b15e]"
                 >
                   Follow Moviejet
                 </a>
