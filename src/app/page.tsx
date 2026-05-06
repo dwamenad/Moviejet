@@ -268,7 +268,6 @@ export default async function Home() {
             <SectionHeading
               eyebrow="Latest Stories"
               title="Fresh stories with enough hierarchy to scan in seconds."
-              description="These entries are pulled from the published post feed, so your friend can keep the site current from the admin panel."
             />
             <Link
               href="/stories"
@@ -292,15 +291,14 @@ export default async function Home() {
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[var(--bronze)]">
-                Built to hand off
+                Editorial rhythm
               </p>
               <h2 className="copy-balance mt-4 text-4xl font-semibold tracking-tight text-white md:text-5xl">
-                Publish stories, edit spotlight pieces, and keep the site moving without opening the codebase.
+                Moviejet keeps the timeline moving with stories, spotlight pieces, and trailer moments.
               </h2>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--paper)]/78">
-                The backend is set up so one login can handle new posts, featured stories, trailer
-                links, and homepage highlights. That keeps the handoff clean when the domain and
-                hosting move over.
+                Follow the latest drops, release windows, and entertainment headlines in one place,
+                shaped for quick reads and easy discovery.
               </p>
             </div>
 
@@ -310,8 +308,8 @@ export default async function Home() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <p className="mt-5 text-sm leading-7 text-[var(--paper)]/78">
-                Start with the sample stories, replace the images and copy with real Moviejet
-                content, then give your friend the admin credentials and hosting access.
+                From short updates to featured coverage, Moviejet gives every story enough room to
+                move beyond the feed.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Link
