@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
-import { getGoogleAdminConfig, getPasswordAdminConfig, getSession } from "@/lib/auth";
+import { getGoogleAdminConfig, getSession } from "@/lib/auth";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -16,7 +16,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect("/admin");
   }
 
-  const passwordAdmin = getPasswordAdminConfig();
   const googleAdmin = getGoogleAdminConfig();
   const params = await searchParams;
 
@@ -41,12 +40,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <div className="rounded-[2rem] border border-white/10 bg-[var(--panel)] p-6 md:p-8">
-          {!passwordAdmin.configured && !googleAdmin.configured ? (
+          {!googleAdmin.configured ? (
             <div className="rounded-[1.4rem] border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-              Configure either password login with{" "}
-              <code className="rounded bg-black/20 px-1 py-0.5">ADMIN_EMAIL</code> and{" "}
-              <code className="rounded bg-black/20 px-1 py-0.5">ADMIN_PASSWORD_HASH</code>, or
-              Google sign-in with{" "}
+              Configure Google sign-in with{" "}
               <code className="rounded bg-black/20 px-1 py-0.5">GOOGLE_CLIENT_ID</code>,{" "}
               <code className="rounded bg-black/20 px-1 py-0.5">GOOGLE_CLIENT_SECRET</code>, and{" "}
               <code className="rounded bg-black/20 px-1 py-0.5">GOOGLE_ADMIN_EMAILS</code>.
@@ -67,52 +63,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               >
                 Continue with Google
               </a>
-              <p className="mt-3 text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-                Allowed admins: {googleAdmin.allowedEmails.join(", ")}
-              </p>
             </div>
-          ) : null}
-
-          {googleAdmin.configured && passwordAdmin.configured ? (
-            <div className="mt-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
-              <span className="h-px flex-1 bg-white/10" />
-              <span>Or use password</span>
-              <span className="h-px flex-1 bg-white/10" />
-            </div>
-          ) : null}
-
-          {passwordAdmin.configured ? (
-            <form action="/auth/login" method="post" className="mt-6 space-y-5">
-              <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                  Email
-                </span>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  defaultValue={passwordAdmin.primaryEmail}
-                  className="mt-3 w-full rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-base text-white outline-none transition focus:border-[var(--bronze)]"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                  Password
-                </span>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  className="mt-3 w-full rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-base text-white outline-none transition focus:border-[var(--bronze)]"
-                />
-              </label>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-[var(--bronze)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--ink)] transition hover:bg-[#f0b15e]"
-              >
-                Enter backend
-              </button>
-            </form>
           ) : null}
         </div>
       </div>
