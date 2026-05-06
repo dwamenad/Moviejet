@@ -31,7 +31,8 @@ function clearOauthCookies(response: NextResponse) {
 }
 
 function redirectToLogin(request: NextRequest, error: string) {
-  const response = NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, request.url));
+  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
+  const response = NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, origin));
   clearOauthCookies(response);
   return response;
 }
@@ -114,7 +115,7 @@ export async function GET(request: NextRequest) {
     }
 
     const sessionToken = await issueSessionToken(email);
-    const response = NextResponse.redirect(new URL("/admin", request.url));
+    const response = NextResponse.redirect(new URL("/admin", origin));
 
     response.cookies.set({
       name: sessionCookieName,
