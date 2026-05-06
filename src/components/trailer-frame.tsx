@@ -31,7 +31,8 @@ export function TrailerFrame({ story }: TrailerFrameProps) {
               {story.title}
             </h3>
             <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--paper)]/72">
-              Add a YouTube trailer URL to this story from the admin panel and it will render here automatically.
+              Stay close to the title everyone is talking about, with featured coverage ready for
+              the next trailer drop.
             </p>
           </div>
         </div>

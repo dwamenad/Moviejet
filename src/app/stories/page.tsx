@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StoryCard } from "@/components/story-card";
@@ -21,16 +20,9 @@ export default async function StoriesPage() {
             The running archive for Moviejet headlines, trailer drops, and culture notes.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
-            This page is driven by the published post feed from the admin backend.
+            Catch up on the stories shaping the timeline, from release-week moments to trailer
+            reactions and entertainment culture.
           </p>
-          <div className="mt-8">
-            <Link
-              href="/login"
-              className="inline-flex items-center rounded-full border border-white/14 px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] transition hover:border-[var(--bronze)] hover:text-white"
-            >
-              Open admin
-            </Link>
-          </div>
         </div>
       </div>
 

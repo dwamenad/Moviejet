@@ -52,15 +52,9 @@ export default async function Home() {
           </p>
           <h1 className="mt-4 text-3xl font-semibold">No stories are live yet.</h1>
           <p className="mt-4 max-w-xl text-base leading-8 text-[var(--muted)]">
-            Seed the site from the admin area, publish a few stories, and the homepage will
-            assemble itself around the latest spotlight and featured coverage.
+            New Moviejet stories are coming soon. Check back for trailer drops, release notes, and
+            entertainment culture updates.
           </p>
-          <Link
-            href="/login"
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-[var(--bronze)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--paper)] transition hover:bg-[var(--bronze)] hover:text-[var(--ink)]"
-          >
-            Open Admin
-          </Link>
         </div>
       </div>
     );
@@ -312,19 +306,13 @@ export default async function Home() {
                 move beyond the feed.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--paper)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--ink)] transition hover:bg-white"
-                >
-                  Open admin
-                </Link>
                 <a
                   href="https://www.instagram.com/moviejet_official/"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-white/14 px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--paper)] transition hover:border-[var(--bronze)]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--paper)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--ink)] transition hover:bg-white"
                 >
-                  Match the IG tone
+                  Follow Moviejet
                 </a>
               </div>
               <p className="mt-5 text-xs uppercase tracking-[0.28em] text-[var(--muted)]">
