@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="mt-6">
               <a
                 href="/auth/google"
-                className="flex w-full items-center justify-center rounded-full border border-white/10 bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--ink)] transition hover:border-[var(--bronze)] hover:bg-[#f7f1e7]"
+                className="flex w-full items-center justify-center rounded-full border border-[var(--bronze)] bg-[var(--bronze)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--ink)] transition hover:border-[#f0b15e] hover:bg-[#f0b15e]"
               >
                 Continue with Google
               </a>
