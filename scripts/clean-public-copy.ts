@@ -27,6 +27,12 @@ const replacements = [
     to:
       "The result is a sharper rhythm and a homepage that always has an obvious editorial center.",
   },
+  {
+    from:
+      "The site should not duplicate the social feed. It should deepen it with stronger packaging, better indexing, and a clear reading flow.",
+    to:
+      "Moviejet turns fast social moments into fuller stories that stay easy to find after the feed moves on.",
+  },
 ];
 
 if (!databaseUrl) {
@@ -44,8 +50,10 @@ try {
       `
         UPDATE posts
         SET body = replace(body, $1, $2),
+            excerpt = replace(excerpt, $1, $2),
             updated_at = NOW()
         WHERE body LIKE '%' || $1 || '%'
+           OR excerpt LIKE '%' || $1 || '%'
       `,
       [replacement.from, replacement.to],
     );

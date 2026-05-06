@@ -121,7 +121,7 @@ const seedStories = [
   {
     title: "Three formats Moviejet can use to turn Instagram energy into site traffic",
     excerpt:
-      "The site should not duplicate the social feed. It should deepen it with stronger packaging, better indexing, and a clear reading flow.",
+      "Moviejet turns fast social moments into fuller stories that stay easy to find after the feed moves on.",
     category: "Editorial",
     coverImage:
       "https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?auto=format&fit=crop&w=1200&q=80",

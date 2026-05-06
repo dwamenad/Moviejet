@@ -211,7 +211,6 @@ export default async function Home() {
             <SectionHeading
               eyebrow="Trailer Radar"
               title="A dedicated moment for the clip everyone is about to talk about."
-              description="Trailer embeds give Moviejet a living pulse instead of a static magazine feel. Pick a story with a trailer URL and the site will surface it here."
             />
             {trailerStory ? (
               <div className="mt-8 rounded-[1.8rem] border border-white/10 bg-[var(--panel)] p-6">
