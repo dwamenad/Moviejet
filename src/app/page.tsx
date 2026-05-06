@@ -284,9 +284,9 @@ export default async function Home() {
           src={spotlightStory.coverImage}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35"
+          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(9,6,7,0.96),rgba(9,6,7,0.82)_48%,rgba(9,6,7,0.7)),linear-gradient(180deg,rgba(9,6,7,0.9),rgba(9,6,7,0.72))]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(9,6,7,0.98),rgba(9,6,7,0.9)_48%,rgba(9,6,7,0.82)),linear-gradient(180deg,rgba(9,6,7,0.96),rgba(9,6,7,0.88))]" />
         <div className="mx-auto max-w-7xl border-y border-white/10 py-14">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
@@ -316,7 +316,7 @@ export default async function Home() {
                   href="https://www.instagram.com/moviejet_official/"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--bronze)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--ink)] transition hover:bg-[#f0b15e]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--bronze)] px-5 py-3 text-sm font-bold uppercase tracking-[0.22em] text-black transition hover:bg-[#f0b15e]"
                 >
                   Follow Moviejet
                 </a>
