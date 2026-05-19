@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { sessionCookieName, verifySessionToken } from "@/lib/auth";
+import { getRequestOrigin, sessionCookieName, verifySessionToken } from "@/lib/auth";
 import { saveStory } from "@/lib/content";
 import { formatPublicSiteSyncMessage, syncPublicSite } from "@/lib/public-sync";
 
@@ -28,7 +28,8 @@ function buildRedirect(
   messageKey: "error" | "success",
   message: string,
 ) {
-  const url = new URL(path, request.url);
+  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
+  const url = new URL(path, origin);
   url.searchParams.set(messageKey, message);
   return NextResponse.redirect(url);
 }
@@ -37,7 +38,8 @@ export async function POST(request: NextRequest) {
   const session = await verifySessionToken(request.cookies.get(sessionCookieName)?.value);
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
+    return NextResponse.redirect(new URL("/login", origin));
   }
 
   const formData = await request.formData();

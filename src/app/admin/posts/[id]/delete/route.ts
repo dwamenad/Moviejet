@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { sessionCookieName, verifySessionToken } from "@/lib/auth";
+import { getRequestOrigin, sessionCookieName, verifySessionToken } from "@/lib/auth";
 import { deleteStory } from "@/lib/content";
 import { formatPublicSiteSyncMessage, syncPublicSite } from "@/lib/public-sync";
 
@@ -12,9 +12,10 @@ type DeleteRouteProps = {
 
 export async function POST(request: NextRequest, { params }: DeleteRouteProps) {
   const session = await verifySessionToken(request.cookies.get(sessionCookieName)?.value);
+  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", origin));
   }
 
   const { id } = await params;
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest, { params }: DeleteRouteProps) {
     slug: slug || undefined,
     storyId: id,
   });
-  const redirectUrl = new URL("/admin", request.url);
+  const redirectUrl = new URL("/admin", origin);
   redirectUrl.searchParams.set(
     "success",
     formatPublicSiteSyncMessage("Story deleted.", syncResult),

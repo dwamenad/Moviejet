@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  getRequestOrigin,
   getSessionCookieOptions,
   googleOauthNonceCookieName,
   googleOauthStateCookieName,
@@ -7,7 +8,8 @@ import {
 } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
-  const response = NextResponse.redirect(new URL("/login", request.url));
+  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
+  const response = NextResponse.redirect(new URL("/login", origin));
 
   response.cookies.set({
     name: sessionCookieName,

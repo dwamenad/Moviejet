@@ -12,15 +12,15 @@ import {
 
 export async function GET(request: NextRequest) {
   const google = getGoogleAdminConfig();
+  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
 
   if (!google.configured) {
-    return NextResponse.redirect(new URL("/login?error=Google+sign-in+is+not+configured", request.url));
+    return NextResponse.redirect(new URL("/login?error=Google+sign-in+is+not+configured", origin));
   }
 
   const state = randomBytes(24).toString("base64url");
   const nonce = randomBytes(24).toString("base64url");
   const configuration = await getGoogleOpenIdConfiguration();
-  const origin = getRequestOrigin(request.headers, request.nextUrl.origin);
   const redirectUri = getGoogleOauthRedirectUri(origin);
   const authorizationUrl = new URL(configuration.authorizationEndpoint);
 
