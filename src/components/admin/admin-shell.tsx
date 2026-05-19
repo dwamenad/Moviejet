@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand-mark";
+import { buildPublicSiteUrl } from "@/lib/site-config";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -8,17 +9,20 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ children, email }: AdminShellProps) {
+  const publicHomeUrl = buildPublicSiteUrl("/") ?? "/";
+  const publicStoriesUrl = buildPublicSiteUrl("/stories") ?? "/stories";
+
   return (
     <div className="min-h-screen bg-[var(--ink)] text-[var(--paper)]">
       <div className="mx-auto grid min-h-screen max-w-7xl gap-10 px-6 py-8 lg:grid-cols-[16rem_1fr] lg:px-10">
         <aside className="rounded-[2rem] border border-white/10 bg-[var(--panel)] p-6 lg:sticky lg:top-8 lg:h-fit">
-          <Link href="/" aria-label="Moviejet home">
+          <a href={publicHomeUrl} aria-label="Moviejet home">
             <BrandMark
               showWordmark
               imageClassName="h-14 w-auto"
               wordmarkClassName="font-display text-5xl uppercase tracking-[0.08em] text-white"
             />
-          </Link>
+          </a>
           <p className="mt-3 text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
             Editorial backend
           </p>
@@ -36,12 +40,12 @@ export function AdminShell({ children, email }: AdminShellProps) {
             >
               New Story
             </Link>
-            <Link
-              href="/stories"
+            <a
+              href={publicStoriesUrl}
               className="block rounded-full border border-white/8 px-4 py-3 transition hover:border-[var(--bronze)] hover:text-white"
             >
               View Site
-            </Link>
+            </a>
           </div>
 
           <div className="mt-8 rounded-[1.6rem] border border-white/8 bg-black/25 p-4">

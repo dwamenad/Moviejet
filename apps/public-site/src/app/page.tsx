@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ArrowUpRight, Clapperboard, Sparkles } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
@@ -8,10 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StoryCard } from "@/components/story-card";
 import { TrailerFrame } from "@/components/trailer-frame";
 import { getHomepageContent } from "@/lib/content";
-import { buildPublicSiteUrl } from "@/lib/site-config";
 import { formatEditorialDate } from "@/lib/utils";
-
-export const dynamic = "force-dynamic";
 
 const releaseChips = [
   "Trailer drops",
@@ -41,12 +37,6 @@ const studioServices = [
 ];
 
 export default async function Home() {
-  const publicSiteUrl = buildPublicSiteUrl();
-
-  if (publicSiteUrl) {
-    redirect(publicSiteUrl);
-  }
-
   const { categories, featuredStories, latestStories, spotlightStory, trailerStory } =
     await getHomepageContent();
 
@@ -226,113 +216,72 @@ export default async function Home() {
                   Current pull
                 </p>
                 <Link href={`/stories/${trailerStory.slug}`} className="mt-3 block">
-                  <h3 className="text-2xl font-semibold tracking-tight text-white transition hover:text-[var(--bronze)]">
+                  <h3 className="copy-balance text-3xl font-semibold tracking-tight text-white transition hover:text-[var(--bronze)]">
                     {trailerStory.title}
                   </h3>
                 </Link>
-                <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{trailerStory.excerpt}</p>
+                <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{trailerStory.excerpt}</p>
+                <p className="mt-6 text-xs uppercase tracking-[0.22em] text-[var(--paper)]/62">
+                  {formatEditorialDate(trailerStory.publishedAt ?? trailerStory.updatedAt)}
+                </p>
               </div>
             ) : null}
           </div>
-          <TrailerFrame story={trailerStory ?? spotlightStory} />
+
+          {trailerStory ? <TrailerFrame story={trailerStory} /> : null}
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20 md:px-10">
-        <SectionHeading
-          eyebrow="For Studios And Partners"
-          title="Moviejet can read as editorial first while still making space for release campaigns."
-          description="That balance matters if the site needs to support both audience growth and future partnership work."
-        />
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <SectionHeading
+            eyebrow="Latest Stories"
+            title="The fast-moving archive behind the spotlight."
+            description="Short, current, and easy to scan. This is where the homepage keeps its pace."
+          />
+          <Link
+            href="/stories"
+            className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--bronze)] transition hover:text-white"
+          >
+            See all stories
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {studioServices.map((service, index) => (
-            <div
-              key={service.title}
-              className="rounded-[1.8rem] border border-white/10 bg-[var(--panel-strong)] p-7 transition duration-300 hover:border-[var(--bronze)]/55 hover:translate-y-[-2px]"
-            >
-              <p className="font-display text-5xl uppercase leading-none text-[var(--bronze)]">
-                0{index + 1}
-              </p>
-              <h3 className="mt-6 text-2xl font-semibold tracking-tight text-white">
-                {service.title}
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{service.description}</p>
-            </div>
+        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {latestStories.map((story) => (
+            <StoryCard key={story.id} story={story} />
           ))}
         </div>
       </section>
 
-      <section className="border-t border-white/8 bg-black/20">
+      <section className="border-y border-white/8 bg-black/20">
         <div className="mx-auto max-w-7xl px-6 py-20 md:px-10">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <SectionHeading
-              eyebrow="Latest Stories"
-              title="Fresh stories with enough hierarchy to scan in seconds."
-            />
-            <Link
-              href="/stories"
-              className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.24em] text-[var(--bronze)] transition hover:text-white"
-            >
-              Browse the archive
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <SectionHeading
+            eyebrow="Studio Services"
+            title="Editorial packaging built for releases that need more than one moment."
+            description="Moviejet can stretch beyond posting into campaign support, launch amplification, and serialized feature work."
+          />
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {latestStories.map((story) => (
-              <StoryCard key={story.id} story={story} />
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {studioServices.map((service) => (
+              <div
+                key={service.title}
+                className="rounded-[1.8rem] border border-white/10 bg-[var(--panel)] p-6"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full border border-[var(--bronze)]/40 bg-[var(--bronze)]/10 p-3 text-[var(--bronze)]">
+                    {service.title.includes("Trailer") ? (
+                      <Clapperboard className="h-5 w-5" />
+                    ) : (
+                      <Sparkles className="h-5 w-5" />
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-semibold tracking-tight text-white">{service.title}</h3>
+                </div>
+                <p className="mt-5 text-sm leading-7 text-[var(--muted)]">{service.description}</p>
+              </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative isolate overflow-hidden px-6 py-24 md:px-10">
-        <img
-          src={spotlightStory.coverImage}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(9,6,7,0.98),rgba(9,6,7,0.9)_48%,rgba(9,6,7,0.82)),linear-gradient(180deg,rgba(9,6,7,0.96),rgba(9,6,7,0.88))]" />
-        <div className="mx-auto max-w-7xl border-y border-white/10 py-14">
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[var(--bronze)]">
-                Editorial rhythm
-              </p>
-              <h2 className="copy-balance mt-4 text-4xl font-semibold tracking-tight text-white md:text-5xl">
-                Moviejet keeps the timeline moving with stories, spotlight pieces, and trailer moments.
-              </h2>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--paper)]/78">
-                Follow the latest drops, release windows, and entertainment headlines in one place,
-                shaped for quick reads and easy discovery.
-              </p>
-            </div>
-
-            <div className="border-l border-[var(--bronze)]/45 bg-black/35 p-6 backdrop-blur-sm">
-              <div className="flex items-center gap-3 text-[var(--bronze)]">
-                <Clapperboard className="h-5 w-5" />
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <p className="mt-5 text-sm leading-7 text-[var(--paper)]/78">
-                From short updates to featured coverage, Moviejet gives every story enough room to
-                move beyond the feed.
-              </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="https://www.instagram.com/moviejet_official/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--bronze)] px-5 py-3 text-sm font-bold uppercase tracking-[0.22em] text-black transition hover:bg-[#f0b15e]"
-                >
-                  Follow Moviejet
-                </a>
-              </div>
-              <p className="mt-5 text-xs uppercase tracking-[0.28em] text-[var(--muted)]">
-                Updated {formatEditorialDate(spotlightStory.updatedAt)}
-              </p>
-            </div>
           </div>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sessionCookieName, verifySessionToken } from "@/lib/auth";
 import { saveStory } from "@/lib/content";
+import { formatPublicSiteSyncMessage, syncPublicSite } from "@/lib/public-sync";
 
 const postSchema = z.object({
   postId: z.string().trim().optional(),
@@ -81,7 +82,18 @@ export async function POST(request: NextRequest) {
     revalidatePath(`/stories/${savedStory.slug}`);
     revalidatePath("/admin");
 
-    return buildRedirect("/admin", request, "success", "Story saved successfully.");
+    const syncResult = await syncPublicSite({
+      reason: "story-saved",
+      slug: savedStory.slug,
+      storyId: savedStory.id,
+    });
+
+    return buildRedirect(
+      "/admin",
+      request,
+      "success",
+      formatPublicSiteSyncMessage("Story saved successfully.", syncResult),
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "DUPLICATE_SLUG") {
       return buildRedirect(rawRedirectTo, request, "error", "That slug is already in use. Pick a different one.");

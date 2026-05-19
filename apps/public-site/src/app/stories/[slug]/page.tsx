@@ -1,22 +1,27 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StoryCard } from "@/components/story-card";
 import { TrailerFrame } from "@/components/trailer-frame";
-import { getRelatedStories, getStoryBySlug } from "@/lib/content";
-import { buildPublicSiteUrl } from "@/lib/site-config";
+import { getRelatedStories, getStoryBySlug, getStorySlugs } from "@/lib/content";
 import { formatEditorialDate, splitBodyIntoParagraphs } from "@/lib/utils";
-
-export const dynamic = "force-dynamic";
 
 type StoryPageProps = {
   params: Promise<{
     slug: string;
   }>;
 };
+
+export async function generateStaticParams() {
+  const slugs = await getStorySlugs();
+
+  return slugs.map((slug) => ({
+    slug,
+  }));
+}
 
 export async function generateMetadata({ params }: StoryPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -36,12 +41,6 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
 
 export default async function StoryPage({ params }: StoryPageProps) {
   const { slug } = await params;
-  const publicSiteUrl = buildPublicSiteUrl(`/stories/${slug}`);
-
-  if (publicSiteUrl) {
-    redirect(publicSiteUrl);
-  }
-
   const story = await getStoryBySlug(slug);
 
   if (!story || !story.published) {

@@ -30,3 +30,7 @@ services:
         sync: false
       - key: SESSION_SECRET
         generateValue: true
+      - key: PUBLIC_SITE_URL
+        sync: false
+      - key: PUBLIC_SITE_DEPLOY_HOOK_URL
+        sync: false

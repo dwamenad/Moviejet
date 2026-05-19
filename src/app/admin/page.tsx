@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAdminStories } from "@/lib/content";
+import { buildPublicSiteUrl } from "@/lib/site-config";
 import { formatEditorialDate } from "@/lib/utils";
 
 type AdminPageProps = {
@@ -11,6 +12,7 @@ type AdminPageProps = {
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const stories = await getAdminStories();
   const params = await searchParams;
+  const publicStoriesBaseUrl = buildPublicSiteUrl("/stories");
   const publishedCount = stories.filter((story) => story.published).length;
   const draftCount = stories.length - publishedCount;
   const spotlightCount = stories.filter((story) => story.spotlight).length;
@@ -85,12 +87,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Link
-                  href={`/stories/${story.slug}`}
+                <a
+                  href={publicStoriesBaseUrl ? `${publicStoriesBaseUrl}/${story.slug}` : `/stories/${story.slug}`}
                   className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] transition hover:border-[var(--bronze)]"
                 >
                   View
-                </Link>
+                </a>
                 <Link
                   href={`/admin/posts/${story.id}`}
                   className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] transition hover:border-[var(--bronze)]"

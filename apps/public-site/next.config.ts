@@ -5,7 +5,10 @@ import type { NextConfig } from "next";
 const rootDirectory = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: "export",
+  images: {
+    unoptimized: true,
+  },
   turbopack: {
     root: rootDirectory,
   },

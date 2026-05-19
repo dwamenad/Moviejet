@@ -43,3 +43,6 @@ next-env.d.ts
 
 /src/generated/prisma
 /.playwright-cli
+/apps/public-site/node_modules
+/apps/public-site/.next
+/apps/public-site/out

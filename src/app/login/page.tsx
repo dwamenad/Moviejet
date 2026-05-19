@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
 import { getGoogleAdminConfig, getSession } from "@/lib/auth";
+import { buildPublicSiteUrl } from "@/lib/site-config";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -11,6 +11,7 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getSession();
+  const publicHomeUrl = buildPublicSiteUrl("/") ?? "/";
 
   if (session) {
     redirect("/admin");
@@ -23,14 +24,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="min-h-screen bg-[var(--ink)] px-6 py-16 text-[var(--paper)] md:px-10">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <div>
-          <Link href="/" aria-label="Moviejet home">
+          <a href={publicHomeUrl} aria-label="Moviejet home">
             <BrandMark
               priority
               showWordmark
               imageClassName="h-16 w-auto"
               wordmarkClassName="font-display text-6xl uppercase tracking-[0.08em] text-white"
             />
-          </Link>
+          </a>
           <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.34em] text-[var(--bronze)]">
             Admin access
           </p>

@@ -1,19 +1,9 @@
-import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StoryCard } from "@/components/story-card";
 import { getPublishedStories } from "@/lib/content";
-import { buildPublicSiteUrl } from "@/lib/site-config";
-
-export const dynamic = "force-dynamic";
 
 export default async function StoriesPage() {
-  const publicSiteUrl = buildPublicSiteUrl("/stories");
-
-  if (publicSiteUrl) {
-    redirect(publicSiteUrl);
-  }
-
   const stories = await getPublishedStories();
 
   return (

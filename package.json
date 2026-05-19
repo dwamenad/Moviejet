@@ -7,12 +7,18 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:admin": "next dev",
     "build": "next build",
+    "build:admin": "next build",
     "start": "next start",
+    "start:admin": "next start",
     "lint": "eslint",
     "content:clean-public-copy": "tsx scripts/clean-public-copy.ts",
+    "content:export-public": "tsx scripts/export-public-content.ts",
     "content:seed": "tsx scripts/seed-content.ts",
-    "password:hash": "tsx scripts/hash-password.ts"
+    "password:hash": "tsx scripts/hash-password.ts",
+    "public:dev": "npm --prefix apps/public-site run dev",
+    "public:build": "npm run content:export-public && npm --prefix apps/public-site run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

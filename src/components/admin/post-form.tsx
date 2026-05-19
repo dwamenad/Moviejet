@@ -21,7 +21,8 @@ export function PostForm({ post, error, success }: PostFormProps) {
           </h1>
         </div>
         <p className="max-w-xl text-sm leading-7 text-[var(--muted)]">
-          Fill in the editorial fields below. Published stories appear on the site immediately.
+          Fill in the editorial fields below. Published stories move to the public site after the
+          next snapshot sync or deploy-hook rebuild.
         </p>
       </div>
 

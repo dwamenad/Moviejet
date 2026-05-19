@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { sessionCookieName, verifySessionToken } from "@/lib/auth";
 import { deleteStory } from "@/lib/content";
+import { formatPublicSiteSyncMessage, syncPublicSite } from "@/lib/public-sync";
 
 type DeleteRouteProps = {
   params: Promise<{
@@ -30,8 +31,16 @@ export async function POST(request: NextRequest, { params }: DeleteRouteProps) {
     revalidatePath(`/stories/${slug}`);
   }
 
+  const syncResult = await syncPublicSite({
+    reason: "story-deleted",
+    slug: slug || undefined,
+    storyId: id,
+  });
   const redirectUrl = new URL("/admin", request.url);
-  redirectUrl.searchParams.set("success", "Story deleted.");
+  redirectUrl.searchParams.set(
+    "success",
+    formatPublicSiteSyncMessage("Story deleted.", syncResult),
+  );
 
   return NextResponse.redirect(redirectUrl);
 }
