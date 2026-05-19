@@ -64,7 +64,7 @@ async function readLocalSnapshot() {
 async function fetchRemoteContent(contentSourceUrl: string) {
   const endpoint = new URL("/api/public/content", `${contentSourceUrl}/`);
   const response = await fetch(endpoint, {
-    cache: "no-store",
+    cache: "force-cache",
   });
 
   if (!response.ok) {
